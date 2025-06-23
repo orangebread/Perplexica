@@ -1,0 +1,65 @@
+name: perplexica-app
+services:
+  # SearxNG Search Engine Service
+  - name: searxng
+    source_dir: /
+    github:
+      repo: orangebread/Perplexica
+      branch: main
+    dockerfile_path: searxng.dockerfile
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    internal_ports:
+      - 8080
+    envs:
+      - key: SEARXNG_SECRET
+        scope: RUN_AND_BUILD_TIME
+        value: a2fb23f1b02e6ee83875b09826990de0f6bd908b6638e8c10277d415f6ab852b
+    health_check:
+      http_path: /search?q=test&format=json
+
+  # Main Perplexica Application
+  - name: app
+    source_dir: /
+    github:
+      repo: orangebread/Perplexica
+      branch: main
+    dockerfile_path: app.dockerfile
+    http_port: 3000
+    instance_count: 1
+    instance_size_slug: basic-xs
+    envs:
+      - key: SEARXNG_API_URL
+        scope: RUN_AND_BUILD_TIME
+        value: ${searxng.PRIVATE_URL}
+      - key: DATA_DIR
+        scope: RUN_AND_BUILD_TIME
+        value: /home/perplexica
+      # API Keys - Set these in DigitalOcean console as encrypted secrets
+      - key: OPENAI_API_KEY
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: GROQ_API_KEY
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: ANTHROPIC_API_KEY
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: GEMINI_API_KEY
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: DEEPSEEK_API_KEY
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+    health_check:
+      http_path: /
+    routes:
+      - path: /
+    
+    # Persistent storage for data and uploads
+    mounts:
+      - path: /home/perplexica/data
+        source_path: /data
+      - path: /home/perplexica/uploads  
+        source_path: /uploads
