@@ -1,6 +1,5 @@
-name: perplexica-app
+name: perplexica-main
 services:
-  # Main Perplexica Application (Single Service)
   - name: app
     source_dir: /
     github:
@@ -9,12 +8,12 @@ services:
     dockerfile_path: app.dockerfile
     http_port: 3000
     instance_count: 1
-    instance_size_slug: basic-s  # Slightly larger since we need to handle more
+    instance_size_slug: basic-xs
     envs:
-      # Use external SearxNG instance
+      # Replace with your deployed SearxNG app URL
       - key: SEARXNG_API_URL
         scope: RUN_AND_BUILD_TIME
-        value: https://search.sapti.me  # Public SearxNG instance
+        value: https://perplexica-searxng-xxxxx.ondigitalocean.app
       - key: DATA_DIR
         scope: RUN_AND_BUILD_TIME
         value: /home/perplexica

@@ -1,0 +1,19 @@
+name: perplexica-searxng
+services:
+  - name: searxng
+    source_dir: /
+    github:
+      repo: orangebread/Perplexica
+      branch: master
+    dockerfile_path: searxng.dockerfile
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    envs:
+      - key: SEARXNG_SECRET
+        scope: RUN_AND_BUILD_TIME
+        value: a2fb23f1b02e6ee83875b09826990de0f6bd908b6638e8c10277d415f6ab852b
+    health_check:
+      http_path: /search?q=test&format=json
+    routes:
+      - path: /
