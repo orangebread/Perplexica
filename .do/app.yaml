@@ -32,7 +32,7 @@ services:
     envs:
       - key: SEARXNG_API_URL
         scope: RUN_AND_BUILD_TIME
-        value: ${searxng.PRIVATE_URL}
+        value: http://searxng:8080
       - key: DATA_DIR
         scope: RUN_AND_BUILD_TIME
         value: /home/perplexica
