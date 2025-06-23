@@ -61,7 +61,10 @@ const loadConfig = () => {
       path.join(process.cwd(), configFileName),           // Current working directory
       path.join('/home/perplexica', configFileName),     // Container home directory
       path.join('/workspace', configFileName),           // App Platform working directory
-      path.join(__dirname, '..', '..', configFileName)   // Relative to this file
+      path.join(__dirname, '..', '..', configFileName),  // Relative to this file
+      path.join(process.cwd(), 'sample.config.toml'),    // Fallback to sample config
+      path.join('/home/perplexica', 'sample.config.toml'),
+      path.join('/workspace', 'sample.config.toml')
     ];
     
     for (const configPath of possiblePaths) {
@@ -75,8 +78,27 @@ const loadConfig = () => {
       }
     }
     
-    // If no config found, throw error with all attempted paths
-    throw new Error(`config.toml not found. Tried paths: ${possiblePaths.join(', ')}`);
+    // If no config found, return default config since we use environment variables
+    console.warn('No config.toml found, using default configuration with environment variables');
+    return {
+      GENERAL: {
+        SIMILARITY_MEASURE: 'cosine',
+        KEEP_ALIVE: '5m'
+      },
+      MODELS: {
+        OPENAI: { API_KEY: '' },
+        GROQ: { API_KEY: '' },
+        ANTHROPIC: { API_KEY: '' },
+        GEMINI: { API_KEY: '' },
+        OLLAMA: { API_URL: '' },
+        DEEPSEEK: { API_KEY: '' },
+        LM_STUDIO: { API_URL: '' },
+        CUSTOM_OPENAI: { API_URL: '', API_KEY: '', MODEL_NAME: '' }
+      },
+      API_ENDPOINTS: {
+        SEARXNG: ''
+      }
+    } as Config;
   }
 
   // Client-side fallback - settings will be loaded via API
