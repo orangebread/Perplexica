@@ -6,6 +6,7 @@ COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile --network-timeout 600000
 
 COPY tsconfig.json next.config.mjs next-env.d.ts postcss.config.js drizzle.config.ts tailwind.config.ts ./
+COPY config.toml ./
 COPY src ./src
 COPY public ./public
 
@@ -27,6 +28,12 @@ COPY --from=builder /home/perplexica/data ./data
 COPY drizzle ./drizzle
 COPY --from=builder /home/perplexica/migrator/build ./build
 COPY --from=builder /home/perplexica/migrator/index.js ./migrate.js
+
+# Copy config file to container
+COPY config.toml ./config.toml
+# Create workspace directory and copy config there for App Platform compatibility
+RUN mkdir -p /workspace
+COPY config.toml /workspace/config.toml
 
 RUN mkdir /home/perplexica/uploads
 

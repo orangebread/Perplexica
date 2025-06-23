@@ -56,9 +56,27 @@ type RecursivePartial<T> = {
 const loadConfig = () => {
   // Server-side only
   if (typeof window === 'undefined') {
-    return toml.parse(
-      fs.readFileSync(path.join(process.cwd(), `${configFileName}`), 'utf-8'),
-    ) as any as Config;
+    // Try multiple possible locations for config.toml
+    const possiblePaths = [
+      path.join(process.cwd(), configFileName),           // Current working directory
+      path.join('/home/perplexica', configFileName),     // Container home directory
+      path.join('/workspace', configFileName),           // App Platform working directory
+      path.join(__dirname, '..', '..', configFileName)   // Relative to this file
+    ];
+    
+    for (const configPath of possiblePaths) {
+      try {
+        if (fs.existsSync(configPath)) {
+          return toml.parse(fs.readFileSync(configPath, 'utf-8')) as any as Config;
+        }
+      } catch (error) {
+        // Continue to next path
+        continue;
+      }
+    }
+    
+    // If no config found, throw error with all attempted paths
+    throw new Error(`config.toml not found. Tried paths: ${possiblePaths.join(', ')}`);
   }
 
   // Client-side fallback - settings will be loaded via API
@@ -138,9 +156,24 @@ export const updateConfig = (config: RecursivePartial<Config>) => {
   if (typeof window === 'undefined') {
     const currentConfig = loadConfig();
     const mergedConfig = mergeConfigs(currentConfig, config);
-    fs.writeFileSync(
-      path.join(path.join(process.cwd(), `${configFileName}`)),
-      toml.stringify(mergedConfig),
-    );
+    
+    // Find existing config file location
+    const possiblePaths = [
+      path.join(process.cwd(), configFileName),
+      path.join('/home/perplexica', configFileName),
+      path.join('/workspace', configFileName),
+      path.join(__dirname, '..', '..', configFileName)
+    ];
+    
+    let configPath = path.join(process.cwd(), configFileName); // Default fallback
+    
+    for (const testPath of possiblePaths) {
+      if (fs.existsSync(testPath)) {
+        configPath = testPath;
+        break;
+      }
+    }
+    
+    fs.writeFileSync(configPath, toml.stringify(mergedConfig));
   }
 };
